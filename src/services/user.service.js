@@ -1,28 +1,10 @@
 const {
-  User
+  User,
+  Access
 } = require('../models');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
 const jwt = require('jsonwebtoken');
-
-const create = async (userBody) => {
-  if (userBody.password)
-    userBody.password = bcrypt.hashSync(userBody.password, 10);
-  return User.create(userBody);
-};
-
-const findOneAndUpdate = async (email_user) => {
-  const filter = {
-    email: email_user
-  };
-  const update = {
-    is_validate: true
-  };
-  await User.findOneAndUpdate(filter, update);
-  let user = await User.findOne(filter);
-  return user;
-};
-
 const compareAsync = (param1, param2) => {
   return new Promise(function (resolve, reject) {
     bcrypt.compare(param1, param2, function (err, res) {
@@ -35,29 +17,76 @@ const compareAsync = (param1, param2) => {
   });
 };
 
+const create = async (userBody) => {
+  if (userBody.password)
+    userBody.password = bcrypt.hashSync(userBody.password, 10);
+  return User.create(userBody);
+};
+
+const findOneByEmail = async (email) => {
+  return User.findOne({
+    where: {
+      email: email
+    }
+  });
+};
+
+const findOneById = async (id) => {
+  return User.findOne({
+    where: {
+      id: id
+    }
+  });
+};
+
+const findOneByIdAndUpdate = async (id, update) => {
+  return await User.update(update, {
+    where: {
+      id: id
+    }
+  });
+};
+
+const findOneByIdAndDelete = async (id) => {
+  return await User.destroy({
+    where: {
+      id: id
+    }
+  });
+};
+
+// get all access of user
+const getAccessUser = async (id) => {
+  return await User.findOne({
+    where: {
+      id: id
+    },
+    include: [{
+      model: Access,
+      as: 'access',
+    }]
+  });
+};
+
 const login = async (req) => {
   const {
     email,
     password
   } = req.body;
 
-  const user = await User.findOne({
-    email: email
-  });
+  const user = await findOneByEmail(email);
 
   if (!user) {
     return 'Invalid Credentiel';
   }
 
-  const accessToken = await jwt.sign({
-    email: user.email,
-    username: user.username,
-    userId: user._id
-  }, config.token.secret);
-
-  const test = await compareAsync(password, user.password);
-  if (test) {
-    return accessToken;
+  const isValid = await compareAsync(password, user.password);
+  if (isValid) {
+    return await jwt.sign({
+      email: user.email,
+      username: user.username,
+      id: user.id
+    }, config.token.secret);
   } else {
     return 'Invalid Credentiel';
   }
@@ -65,6 +94,10 @@ const login = async (req) => {
 
 module.exports = {
   create,
-  findOneAndUpdate,
-  login
+  login,
+  findOneById,
+  findOneByIdAndUpdate,
+  findOneByIdAndDelete,
+  findOneByEmail,
+  getAccessUser
 };

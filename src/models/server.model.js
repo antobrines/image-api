@@ -1,19 +1,35 @@
-const mongoose = require('mongoose');
-const types = mongoose.Schema.Types;
-
-const serverSchema = mongoose.Schema({
-  name: {
-    type: types.String,
-    required: true,
-  },
-  files: {
-    type: [types.ObjectId],
-    ref: 'File',
-    required: true,
-    default: [],
-  },
-});
-
-const Server = mongoose.model('Server', serverSchema);
-
-module.exports = Server;
+module.exports = (sequelize, DataTypes) => {
+  const Server = sequelize.define('server', {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+  });
+  Server.associate = (models) => {
+    Server.hasMany(models.File, {
+      foreignKey: 'server',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+    Server.hasMany(models.Access, {
+      foreignKey: 'server',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+  };
+  return Server;
+};

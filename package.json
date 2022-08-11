@@ -10,7 +10,9 @@
     "joi": "^17.5.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.1.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.21.3"
   },
   "devDependencies": {
     "eslint": "^8.5.0"

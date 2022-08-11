@@ -1,36 +1,43 @@
-const mongoose = require('mongoose');
-const types = mongoose.Schema.Types;
-
-const accessSchema = mongoose.Schema({
-  user: {
-    type: types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  server: {
-    type: types.ObjectId,
-    ref: 'Server',
-    required: true,
-  },
-  createdAt: {
-    type: types.Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: types.Date,
-    default: Date.now,
-  },
-  size: {
-    type: types.Number,
-    required: true,
-  },
-  isAdmin: {
-    type: types.Boolean,
-    required: true,
-    default: false,
-  },
-});
-
-const Access = mongoose.model('Access', accessSchema);
-
-module.exports = Access;
+module.exports = (sequelize, DataTypes) => {
+  const Access = sequelize.define('access', {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+    },
+    user: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    server: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    sizeMax: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+  });
+  Access.associate = (models) => {
+    Access.belongsTo(models.User, {
+      foreignKey: 'user',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+    Access.belongsTo(models.Server, {
+      foreignKey: 'server',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+  };
+  return Access;
+};

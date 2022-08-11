@@ -1,43 +1,51 @@
-const mongoose = require('mongoose');
-const types = mongoose.Schema.Types;
-
-const fileSchema = mongoose.Schema({
-  name: {
-    type: types.String,
-    required: true,
-  },
-  size: {
-    type: types.Number,
-    required: true,
-  },
-  type: {
-    type: types.String,
-    required: true,
-  },
-  path: {
-    type: types.String,
-    required: true,
-  },
-  owner: {
-    type: types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  createdAt: {
-    type: types.Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: types.Date,
-    default: Date.now,
-  },
-  server: {
-    type: types.ObjectId,
-    ref: 'Server',
-    required: true,
-  },
-});
-
-const File = mongoose.model('File', fileSchema);
-
-module.exports = File;
+module.exports = (sequelize, DataTypes) => {
+  const File = sequelize.define('file', {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    path: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    size: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    server: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    createdBy: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+  });
+  File.associate = (models) => {
+    File.belongsTo(models.User, {
+      foreignKey: 'createdBy',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+    File.belongsTo(models.Server, {
+      foreignKey: 'server',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
+  };
+  return File;
+};
